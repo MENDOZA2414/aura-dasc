@@ -15,23 +15,53 @@ const Chatbot = () => {
   const [apiKey] = useState('Bearer 4H0DHA5-1SGMFKH-K49YDJD-N7M51ME');
 
   useEffect(() => {
+    fetchConversations();
+  }, []);
+
+  useEffect(() => {
     if (currentConversationId !== null) {
       fetchConversation(currentConversationId);
     }
   }, [currentConversationId]);
 
-  const fetchConversation = async (conversationId) => {
+  const fetchConversations = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/v1/workspace/prueba/thread/${conversationId}`, {
+      const response = await axios.get('http://localhost:3001/api/v1/workspace/prueba', {
         headers: {
           'Authorization': apiKey
         }
       });
-      const fetchedMessages = response.data.messages.map(msg => ({
+      
+      const threads = response.data.workspace[0].threads || [];
+      
+      // Mapear los hilos y usar el `slug` como nombre temporal
+      const formattedThreads = threads.map((thread, index) => ({
+        id: thread.slug,
+        name: thread.slug || `Hilo ${index + 1}`, // Usa el `slug` o un nombre predeterminado
+        messages: [] // Inicialmente vacío
+      }));
+  
+      setConversations(formattedThreads);
+    } catch (error) {
+      console.error('Error al obtener las conversaciones:', error);
+    }
+  };
+  
+
+  const fetchConversation = async (conversationId) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/api/v1/workspace/prueba/thread/${conversationId}/chats`, {
+        headers: {
+          'Authorization': apiKey
+        }
+      });
+      console.log('API Response for Conversation:', response.data);
+      const fetchedMessages = response.data.history.map(msg => ({
         text: msg.content,
         isUser: msg.role === 'user',
-        timestamp: new Date(msg.timestamp).getTime()
+        timestamp: msg.sentAt
       }));
+
       setConversations(prev =>
         prev.map(conv =>
           conv.id === conversationId
@@ -60,7 +90,7 @@ const Chatbot = () => {
       if (currentConversationId === null) {
         try {
           const response = await axios.post('http://localhost:3001/api/v1/workspace/prueba/thread/new', {
-            userId: 1, // Ajusta según el usuario real
+            userId: 1,
             name: inputMessage,
             slug: `slug-${Date.now()}`
           }, {
@@ -145,6 +175,7 @@ const Chatbot = () => {
 
   const handleSelectConversation = (conversationId) => {
     setCurrentConversationId(conversationId);
+    fetchConversation(conversationId);
     setIsSidebarOpen(false);
   };
 
@@ -176,7 +207,10 @@ const Chatbot = () => {
     }
   };
 
-  const currentConversation = conversations.find(conv => conv.id === currentConversationId);
+  console.log('Conversations:', conversations);
+  console.log('Current Conversation ID:', currentConversationId);
+
+  const currentConversation = conversations?.find(conv => conv.id === currentConversationId);
 
   return (
     <div className="chatbot-container">
@@ -237,7 +271,7 @@ const Chatbot = () => {
         ) : (
           <div className="chat-view">
             <div className="messages-container">
-              {currentConversation.messages.map((message, index) => (
+              {currentConversation.messages?.map((message, index) => (
                 <div key={index} className={`message ${message.isUser ? 'user-message' : 'bot-message'}`}>
                   {!message.isUser && (
                     <img src="/aura-bot.png" alt="AURA Bot" className="bot-avatar-small" />
