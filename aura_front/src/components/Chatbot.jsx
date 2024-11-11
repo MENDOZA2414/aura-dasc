@@ -34,10 +34,10 @@ const Chatbot = () => {
       
       const threads = response.data.workspace[0].threads || [];
       
-      // Mapear los hilos y usar el `slug` como nombre temporal
+      // Mapear los hilos y usar el `slug` como identificador
       const formattedThreads = threads.map((thread, index) => ({
         id: thread.slug,
-        name: thread.slug || `Hilo ${index + 1}`, // Usa el `slug` o un nombre predeterminado
+        name: `Hilo ${index + 1}`, // Nombre predeterminado
         messages: [] // Inicialmente vacío
       }));
   
@@ -46,7 +46,6 @@ const Chatbot = () => {
       console.error('Error al obtener las conversaciones:', error);
     }
   };
-  
 
   const fetchConversation = async (conversationId) => {
     try {
@@ -55,7 +54,6 @@ const Chatbot = () => {
           'Authorization': apiKey
         }
       });
-      console.log('API Response for Conversation:', response.data);
       const fetchedMessages = response.data.history.map(msg => ({
         text: msg.content,
         isUser: msg.role === 'user',
@@ -74,6 +72,28 @@ const Chatbot = () => {
     }
   };
 
+  const sendMessageToThread  = async (threadSlug, message) => {
+    try {
+      const response = await axios.post(
+        `http://localhost:3001/api/v1/workspace/prueba/thread/${threadSlug}/chat`,
+        {
+          message: message,
+          mode: "chat", // o "query", según sea tu caso
+          userId: 1 // ID del usuario si es necesario
+        },
+        {
+          headers: {
+            'Authorization': apiKey,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error('Error al enviar el mensaje:', error);
+    }
+  };
+
   const handleSidebarToggle = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
@@ -89,6 +109,7 @@ const Chatbot = () => {
 
       if (currentConversationId === null) {
         try {
+          // Crear una nueva conversación si no hay una abierta
           const response = await axios.post('http://localhost:3001/api/v1/workspace/prueba/thread/new', {
             userId: 1,
             name: inputMessage,
@@ -113,6 +134,7 @@ const Chatbot = () => {
           return;
         }
       } else {
+        // Agregar el mensaje a la conversación existente
         setConversations(prev =>
           prev.map(conv =>
             conv.id === currentConversationId
@@ -122,19 +144,10 @@ const Chatbot = () => {
         );
 
         try {
-          const response = await axios.post(`http://localhost:3001/api/v1/workspace/prueba/thread/${currentConversationId}/chat`, {
-            thread_id: currentConversationId,
-            message: inputMessage
-          }, {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': apiKey
-            }
-          });
+          // Enviar el mensaje al hilo específico
+          const response = await sendMessageToThread (currentConversationId, inputMessage);
 
-          console.log('Respuesta completa:', response.data);
-
-          const botResponseText = response.data.textResponse || 'No se recibió respuesta del modelo';
+          const botResponseText = response.textResponse || 'No se recibió respuesta del modelo';
           const botResponse = {
             text: botResponseText,
             isUser: false,
@@ -203,12 +216,9 @@ const Chatbot = () => {
       setCurrentConversationId(newThreadId);
       setInputMessage('');
     } catch (error) {
-      console.error('Error al crear un nuevo hilo:', error);
+      console.error('Error al crear nuevo hilo:', error);
     }
   };
-
-  console.log('Conversations:', conversations);
-  console.log('Current Conversation ID:', currentConversationId);
 
   const currentConversation = conversations?.find(conv => conv.id === currentConversationId);
 
@@ -250,7 +260,7 @@ const Chatbot = () => {
           <div className="initial-view">
             <img src="/aura-bot.png" alt="AURA Bot" className="bot-avatar-large" />
             <p className="welcome-text">
-              Hola! Soy <span className="aura-text">AURA</span>,<br /> ¿En qué puedo ayudarte?
+              ¡Hola! Soy <span className="aura-text">AURA</span>,<br /> ¿En qué puedo ayudarte?
             </p>
             <form onSubmit={handleSendMessage} className="input-container initial-input">
               <input
