@@ -12,6 +12,7 @@ const Chatbot = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [connectionError, setConnectionError] = useState(false); // Nuevo estado para el mensaje de error
   const [apiKey] = useState('Bearer 4H0DHA5-1SGMFKH-K49YDJD-N7M51ME');
 
   useEffect(() => {
@@ -34,7 +35,6 @@ const Chatbot = () => {
       
       const threads = response.data.workspace[0].threads || [];
       
-      // Mapear los hilos y usar el `slug` como identificador
       const formattedThreads = threads.map((thread, index) => ({
         id: thread.slug,
         name: `Hilo ${index + 1}`, // Nombre predeterminado
@@ -72,14 +72,14 @@ const Chatbot = () => {
     }
   };
 
-  const sendMessageToThread  = async (threadSlug, message) => {
+  const sendMessageToThread = async (threadSlug, message) => {
     try {
       const response = await axios.post(
         `http://localhost:3001/api/v1/workspace/prueba/thread/${threadSlug}/chat`,
         {
           message: message,
-          mode: "chat", // o "query", según sea tu caso
-          userId: 1 // ID del usuario si es necesario
+          mode: "chat",
+          userId: 1
         },
         {
           headers: {
@@ -91,6 +91,7 @@ const Chatbot = () => {
       return response.data;
     } catch (error) {
       console.error('Error al enviar el mensaje:', error);
+      throw error; // Propagar el error para manejarlo en handleSendMessage
     }
   };
 
@@ -107,9 +108,11 @@ const Chatbot = () => {
         timestamp: new Date().getTime()
       };
 
+      setConnectionError(false); // Resetear el mensaje de error al intentar enviar un mensaje
+      setIsTyping(true); // Mostrar el indicador de escritura
+
       if (currentConversationId === null) {
         try {
-          // Crear una nueva conversación si no hay una abierta
           const response = await axios.post('http://localhost:3001/api/v1/workspace/prueba/thread/new', {
             userId: 1,
             name: inputMessage,
@@ -134,7 +137,6 @@ const Chatbot = () => {
           return;
         }
       } else {
-        // Agregar el mensaje a la conversación existente
         setConversations(prev =>
           prev.map(conv =>
             conv.id === currentConversationId
@@ -144,8 +146,7 @@ const Chatbot = () => {
         );
 
         try {
-          // Enviar el mensaje al hilo específico
-          const response = await sendMessageToThread (currentConversationId, inputMessage);
+          const response = await sendMessageToThread(currentConversationId, inputMessage);
 
           const botResponseText = response.textResponse || 'No se recibió respuesta del modelo';
           const botResponse = {
@@ -163,26 +164,13 @@ const Chatbot = () => {
           );
         } catch (error) {
           console.error('Error al enviar el mensaje:', error);
-          const errorResponse = {
-            text: 'Hubo un error al conectar con la IA. Intenta nuevamente más tarde.',
-            isUser: false,
-            timestamp: new Date().getTime()
-          };
-
-          setConversations(prev =>
-            prev.map(conv =>
-              conv.id === currentConversationId
-                ? { ...conv, messages: [...conv.messages, errorResponse] }
-                : conv
-            )
-          );
+          setConnectionError(true); // Activar el mensaje de error
         } finally {
-          setIsTyping(false);
+          setIsTyping(false); // Detener el indicador de escritura al finalizar
         }
       }
 
       setInputMessage('');
-      setIsTyping(true);
     }
   };
 
@@ -289,9 +277,14 @@ const Chatbot = () => {
                   <div className="message-content">{message.text}</div>
                 </div>
               ))}
-              {isTyping && (
+              {isTyping && !connectionError && (
                 <div className="typing-indicator">
                   <p>AURA está escribiendo<span className="dots">...</span></p>
+                </div>
+              )}
+              {connectionError && (
+                <div className="error-indicator">
+                  <p>Hubo un error al conectar con AURA. Intenta nuevamente más tarde.</p>
                 </div>
               )}
             </div>
