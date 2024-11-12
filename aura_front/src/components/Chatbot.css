@@ -65,7 +65,16 @@
     color: #3a84f7;
     font-weight: bold;
 }
+/* Desplazamiento del contenido del chat */
+.chat-content.shifted-right {
+    transform: translateX(65px); /* Ajusta el valor según el ancho de la sidebar */
+    transition: transform 0.3s ease;
+}
 
+.chat-content.centered {
+    transform: translateX(0);
+    transition: transform 0.3s ease;
+}
 /* Sidebar Styles */
 .sidebar {
     position: fixed;

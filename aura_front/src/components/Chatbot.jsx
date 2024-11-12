@@ -15,8 +15,8 @@ const Chatbot = () => {
   const [connectionError, setConnectionError] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [apiKey] = useState('Bearer 4H0DHA5-1SGMFKH-K49YDJD-N7M51ME');
-  const messagesEndRef = useRef(null); // Referencia para el final de los mensajes
-  const chatViewRef = useRef(null); // Referencia para el contenedor de mensajes
+  const messagesEndRef = useRef(null);
+  const chatViewRef = useRef(null);
 
   useEffect(() => {
     fetchConversations();
@@ -273,7 +273,7 @@ const Chatbot = () => {
         </ul>
       </div>
 
-      <div className="chat-content">
+      <div className={`chat-content ${isSidebarOpen ? 'shifted-right' : 'centered'}`}>
         {!currentConversation ? (
           <div className="initial-view">
             <img src="/aura-bot.png" alt="AURA Bot" className="bot-avatar-large" />
