@@ -38,8 +38,10 @@ const Chatbot = () => {
   useEffect(() => {
     const handleScroll = () => {
       if (chatViewRef.current) {
-        const atBottom = chatViewRef.current.scrollHeight - chatViewRef.current.scrollTop <= chatViewRef.current.clientHeight + 100;
-        setShowScrollToBottom(!atBottom);
+        setShowScrollToBottom(
+          chatViewRef.current.scrollHeight - chatViewRef.current.scrollTop >
+          chatViewRef.current.clientHeight + 100
+        );
       }
     };
 
@@ -54,6 +56,10 @@ const Chatbot = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    scrollToBottom(); // Desplazar al último mensaje cada vez que haya un cambio en los mensajes o en isTyping
+  }, [conversations, isTyping]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -208,7 +214,6 @@ const Chatbot = () => {
       }
     }
   };
-  
 
   const handleSelectConversation = (conversationId) => {
     setCurrentConversationId(conversationId);
@@ -335,17 +340,17 @@ const Chatbot = () => {
                   <div className="message-content">{message.text}</div>
                 </div>
               ))}
-              {isTyping && (
+              <div ref={messagesEndRef} />
+              {isTyping && !connectionError && (
                 <div className="typing-indicator">
-                  AURA está escribiendo<span className="dots">...</span>
+                  <p>AURA está escribiendo<span className="dots">...</span></p>
                 </div>
               )}
               {connectionError && (
                 <div className="error-indicator">
-                  Hubo un error al conectar con AURA. Intenta nuevamente más tarde.
+                  <p>Hubo un error al conectar con AURA. Intenta nuevamente más tarde.</p>
                 </div>
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             <form onSubmit={handleSendMessage} className="input-container chat-input">
