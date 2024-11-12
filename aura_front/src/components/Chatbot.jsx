@@ -15,7 +15,7 @@ const Chatbot = () => {
   const [connectionError, setConnectionError] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [isListening, setIsListening] = useState(false); // Estado para el reconocimiento de voz
-  const [apiKey] = useState('Bearer 4H0DHA5-1SGMFKH-K49YDJD-N7M51ME');
+  const [apiKey] = useState('Bearer RT5QFQ8-PY4M7CB-N49FAYV-QM2GYAC');
   const messagesEndRef = useRef(null);
   const chatViewRef = useRef(null);
   const apiUrl = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
