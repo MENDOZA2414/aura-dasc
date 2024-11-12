@@ -191,6 +191,7 @@
     align-items: center;
     padding: 0 20px;
     box-sizing: border-box;
+     margin-bottom: 90px;
 }
 
 .messages-container {
@@ -200,8 +201,11 @@
     width: 100%;
     max-width: 650px;
     margin-top: 40px; /* Margen superior agregado */
+    
 }
-
+.message:last-child {
+    margin-bottom: 40px; /* Espacio adicional para el último mensaje */
+}
 .message {
     display: flex;
     align-items: center;
