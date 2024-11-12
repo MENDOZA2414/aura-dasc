@@ -322,6 +322,53 @@
     display: inline-block;
     animation: dots 1.5s steps(3, end) infinite;
   }
+  .scroll-to-bottom {
+    position: fixed;
+    bottom: 100px; /* Ajusta la altura para que esté encima del cuadro de entrada */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(27, 30, 34, 0.8); /* Color #1b1e22 con transparencia */
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .scroll-to-bottom:hover {
+    background-color: rgba(27, 30, 34, 1); /* Color #1b1e22 sin transparencia al hacer hover */
+    transform: translateX(-50%) scale(1.1); /* Efecto de zoom al hacer hover */
+  }
+  
+  .sidebar {
+    padding-right: 10px; /* Espacio adicional en el lado derecho */
+}
+  /* Estilo para el fondo de la barra de desplazamiento */
+::-webkit-scrollbar {
+    width: 12px; /* Ancho de la barra de desplazamiento */
+  }
+  
+  ::-webkit-scrollbar-track {
+    background-color: #1b1e22; /* Color de fondo de la barra */
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: #353b44; /* Color azul para el scroll */
+    border-radius: 5px; /* Bordes redondeados */
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: #4b5059; /* Color más claro cuando está en hover */
+  }
+
+  
   
   @keyframes dots {
     0% { content: ''; }

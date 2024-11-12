@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { BsMicFill } from 'react-icons/bs';
 import { IoSendSharp } from 'react-icons/io5';
 import { TbLayoutSidebarLeftExpand, TbLayoutSidebarLeftCollapse } from "react-icons/tb";
-import { AiOutlinePlus } from 'react-icons/ai';
+import { AiOutlinePlus, AiOutlineDown } from 'react-icons/ai';
 import './Chatbot.css';
 
 const Chatbot = () => {
@@ -12,8 +12,11 @@ const Chatbot = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [connectionError, setConnectionError] = useState(false); // Nuevo estado para el mensaje de error
+  const [connectionError, setConnectionError] = useState(false);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
   const [apiKey] = useState('Bearer 4H0DHA5-1SGMFKH-K49YDJD-N7M51ME');
+  const messagesEndRef = useRef(null); // Referencia para el final de los mensajes
+  const chatViewRef = useRef(null); // Referencia para el contenedor de mensajes
 
   useEffect(() => {
     fetchConversations();
@@ -24,6 +27,32 @@ const Chatbot = () => {
       fetchConversation(currentConversationId);
     }
   }, [currentConversationId]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (chatViewRef.current) {
+        setShowScrollToBottom(
+          chatViewRef.current.scrollHeight - chatViewRef.current.scrollTop >
+          chatViewRef.current.clientHeight + 100
+        );
+      }
+    };
+
+    const container = chatViewRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', handleScroll);
+      }
+    };
+  }, []);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   const fetchConversations = async () => {
     try {
@@ -37,8 +66,8 @@ const Chatbot = () => {
       
       const formattedThreads = threads.map((thread, index) => ({
         id: thread.slug,
-        name: `Hilo ${index + 1}`, // Nombre predeterminado
-        messages: [] // Inicialmente vacío
+        name: `Hilo ${index + 1}`,
+        messages: []
       }));
   
       setConversations(formattedThreads);
@@ -91,7 +120,7 @@ const Chatbot = () => {
       return response.data;
     } catch (error) {
       console.error('Error al enviar el mensaje:', error);
-      throw error; // Propagar el error para manejarlo en handleSendMessage
+      throw error;
     }
   };
 
@@ -108,8 +137,8 @@ const Chatbot = () => {
         timestamp: new Date().getTime()
       };
 
-      setConnectionError(false); // Resetear el mensaje de error al intentar enviar un mensaje
-      setIsTyping(true); // Mostrar el indicador de escritura
+      setConnectionError(false);
+      setIsTyping(true);
 
       if (currentConversationId === null) {
         try {
@@ -162,11 +191,12 @@ const Chatbot = () => {
                 : conv
             )
           );
+          scrollToBottom();
         } catch (error) {
           console.error('Error al enviar el mensaje:', error);
-          setConnectionError(true); // Activar el mensaje de error
+          setConnectionError(true);
         } finally {
-          setIsTyping(false); // Detener el indicador de escritura al finalizar
+          setIsTyping(false);
         }
       }
 
@@ -267,7 +297,7 @@ const Chatbot = () => {
             </form>
           </div>
         ) : (
-          <div className="chat-view">
+          <div className="chat-view" ref={chatViewRef}>
             <div className="messages-container">
               {currentConversation.messages?.map((message, index) => (
                 <div key={index} className={`message ${message.isUser ? 'user-message' : 'bot-message'}`}>
@@ -277,6 +307,7 @@ const Chatbot = () => {
                   <div className="message-content">{message.text}</div>
                 </div>
               ))}
+              <div ref={messagesEndRef}></div>
               {isTyping && !connectionError && (
                 <div className="typing-indicator">
                   <p>AURA está escribiendo<span className="dots">...</span></p>
@@ -306,6 +337,12 @@ const Chatbot = () => {
           </div>
         )}
       </div>
+
+      {showScrollToBottom && (
+        <button className="scroll-to-bottom" onClick={scrollToBottom}>
+          <AiOutlineDown />
+        </button>
+      )}
     </div>
   );
 };
