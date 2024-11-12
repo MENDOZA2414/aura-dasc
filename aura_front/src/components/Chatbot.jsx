@@ -31,16 +31,15 @@ const Chatbot = () => {
   useEffect(() => {
     if (currentConversationId !== null) {
       fetchConversation(currentConversationId);
+      setTimeout(scrollToBottom, 100); // Desplazar al último mensaje al abrir un hilo
     }
   }, [currentConversationId]);
 
   useEffect(() => {
     const handleScroll = () => {
       if (chatViewRef.current) {
-        setShowScrollToBottom(
-          chatViewRef.current.scrollHeight - chatViewRef.current.scrollTop >
-          chatViewRef.current.clientHeight + 100
-        );
+        const atBottom = chatViewRef.current.scrollHeight - chatViewRef.current.scrollTop <= chatViewRef.current.clientHeight + 100;
+        setShowScrollToBottom(!atBottom);
       }
     };
 
@@ -143,7 +142,6 @@ const Chatbot = () => {
         timestamp: new Date().getTime()
       };
   
-      // Limpia el input inmediatamente después de enviar el mensaje
       setInputMessage('');
   
       setConnectionError(false);
@@ -216,6 +214,7 @@ const Chatbot = () => {
     setCurrentConversationId(conversationId);
     fetchConversation(conversationId);
     setIsSidebarOpen(false);
+    setTimeout(scrollToBottom, 100); // Desplazar al final al abrir el hilo
   };
 
   const handleCreateNewConversation = async () => {
@@ -241,6 +240,7 @@ const Chatbot = () => {
       setConversations([...conversations, newConversation]);
       setCurrentConversationId(newThreadId);
       setInputMessage('');
+      setTimeout(scrollToBottom, 100); // Desplazar al final al crear un hilo
     } catch (error) {
       console.error('Error al crear nuevo hilo:', error);
     }
@@ -322,8 +322,7 @@ const Chatbot = () => {
                         autoPlay 
                         loop 
                         muted 
-                        playsInline
-                        className="bot-avatar-small"
+                        className="bot-avatar-small last-message"
                       ></video>
                     ) : (
                       <img 
@@ -336,6 +335,16 @@ const Chatbot = () => {
                   <div className="message-content">{message.text}</div>
                 </div>
               ))}
+              {isTyping && (
+                <div className="typing-indicator">
+                  AURA está escribiendo<span className="dots">...</span>
+                </div>
+              )}
+              {connectionError && (
+                <div className="error-indicator">
+                  Hubo un error al conectar con AURA. Intenta nuevamente más tarde.
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -358,7 +367,7 @@ const Chatbot = () => {
         )}
       </div>
 
-      {showScrollToBottom && (
+      {showScrollToBottom && currentConversation && (
         <button className="scroll-to-bottom" onClick={scrollToBottom}>
           <AiOutlineDown />
         </button>
