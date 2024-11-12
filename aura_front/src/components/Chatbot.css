@@ -428,3 +428,29 @@
     100% { content: '...'; }
   }
   
+/* Micrófono en estado activo (rojo con fondo blanco y palpitante) */
+.mic-button.listening {
+    color: red;
+    background-color: white;
+    animation: pulse 1s infinite;
+}
+
+/* Fondo azul cuando el micrófono no está activo */
+.mic-button {
+    background-color: #3a84f7; /* Color azul */
+    transition: background-color 0.3s ease;
+}
+
+/* Animación de palpitación */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+

@@ -6,10 +6,6 @@ import { TbLayoutSidebarLeftExpand, TbLayoutSidebarLeftCollapse } from "react-ic
 import { AiOutlinePlus, AiOutlineDown } from 'react-icons/ai';
 import './Chatbot.css';
 
-const isMobileDevice = () => {
-  return /Mobi|Android/i.test(navigator.userAgent);
-};
-
 const Chatbot = () => {
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
@@ -18,11 +14,11 @@ const Chatbot = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
   const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [isListening, setIsListening] = useState(false); // Estado para el reconocimiento de voz
   const [apiKey] = useState('Bearer 4H0DHA5-1SGMFKH-K49YDJD-N7M51ME');
   const messagesEndRef = useRef(null);
   const chatViewRef = useRef(null);
   const apiUrl = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
-  console.log("API URL:", apiUrl);
 
   useEffect(() => {
     fetchConversations();
@@ -251,6 +247,49 @@ const Chatbot = () => {
     }
   };
 
+  const handleMicClick = () => {
+    if (!('webkitSpeechRecognition' in window)) {
+      alert("Tu navegador no admite reconocimiento de voz.");
+      return;
+    }
+  
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.continuous = false;
+    recognition.interimResults = true; // Cambiado a true para resultados parciales
+  
+    recognition.onstart = () => {
+      setIsListening(true);
+      setInputMessage(''); // Limpiar el mensaje al empezar a escuchar
+    };
+  
+    recognition.onresult = (event) => {
+      let interimTranscript = ''; // Variable para guardar los resultados intermedios
+  
+      for (let i = 0; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          setInputMessage(transcript); // Si es el resultado final, asigna el valor completo
+        } else {
+          interimTranscript += transcript; // Guarda el texto intermedio
+          setInputMessage(interimTranscript); // Actualiza con el texto intermedio
+        }
+      }
+    };
+  
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+  
+    recognition.onerror = (event) => {
+      console.error("Error en el reconocimiento de voz:", event.error);
+      setIsListening(false);
+    };
+  
+    recognition.start();
+  };
+  
+
   const currentConversation = conversations?.find(conv => conv.id === currentConversationId);
 
   return (
@@ -307,9 +346,16 @@ const Chatbot = () => {
                 placeholder="Envía un mensaje o háblame por voz"
                 className="message-input"
               />
-              <button type="button" className="mic-button">
+              <button 
+                type="button" 
+                className={`mic-button ${isListening ? 'listening' : ''}`} 
+                onClick={handleMicClick} 
+                disabled={isListening}
+              >
                 <BsMicFill />
               </button>
+
+
               <button type="submit" className="send-button">
                 <IoSendSharp />
               </button>
@@ -361,7 +407,12 @@ const Chatbot = () => {
                 placeholder="Envía un mensaje o háblame por voz"
                 className="message-input"
               />
-              <button type="button" className="mic-button">
+              <button 
+                type="button" 
+                className="mic-button" 
+                onClick={handleMicClick} 
+                disabled={isListening}
+              >
                 <BsMicFill />
               </button>
               <button type="submit" className="send-button">
