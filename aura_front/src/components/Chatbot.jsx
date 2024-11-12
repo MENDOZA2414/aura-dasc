@@ -17,6 +17,8 @@ const Chatbot = () => {
   const [apiKey] = useState('Bearer 4H0DHA5-1SGMFKH-K49YDJD-N7M51ME');
   const messagesEndRef = useRef(null);
   const chatViewRef = useRef(null);
+  const apiUrl = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
+
 
   useEffect(() => {
     fetchConversations();
@@ -56,7 +58,7 @@ const Chatbot = () => {
 
   const fetchConversations = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/v1/workspace/prueba', {
+      const response = await axios.get(`${apiUrl}/v1/workspace/prueba`, {
         headers: {
           'Authorization': apiKey
         }
@@ -78,7 +80,7 @@ const Chatbot = () => {
 
   const fetchConversation = async (conversationId) => {
     try {
-      const response = await axios.get(`http://localhost:3001/api/v1/workspace/prueba/thread/${conversationId}/chats`, {
+      const response = await axios.get(`${apiUrl}/v1/workspace/prueba/thread/${conversationId}/chats`, {
         headers: {
           'Authorization': apiKey
         }
@@ -103,8 +105,7 @@ const Chatbot = () => {
 
   const sendMessageToThread = async (threadSlug, message) => {
     try {
-      const response = await axios.post(
-        `http://localhost:3001/api/v1/workspace/prueba/thread/${threadSlug}/chat`,
+      const response = await axios.post(`${apiUrl}/v1/workspace/prueba/thread/${threadSlug}/chat`,
         {
           message: message,
           mode: "chat",
@@ -136,13 +137,16 @@ const Chatbot = () => {
         isUser: true,
         timestamp: new Date().getTime()
       };
-
+  
+      // Limpia el input inmediatamente después de enviar el mensaje
+      setInputMessage('');
+  
       setConnectionError(false);
       setIsTyping(true);
-
+  
       if (currentConversationId === null) {
         try {
-          const response = await axios.post('http://localhost:3001/api/v1/workspace/prueba/thread/new', {
+          const response = await axios.post(`${apiUrl}/v1/workspace/prueba/thread/new`, {
             userId: 1,
             name: inputMessage,
             slug: `slug-${Date.now()}`
@@ -152,7 +156,7 @@ const Chatbot = () => {
               'Authorization': apiKey
             }
           });
-
+  
           const newConversationId = response.data.thread.id;
           const newConversation = {
             id: newConversationId,
@@ -173,17 +177,17 @@ const Chatbot = () => {
               : conv
           )
         );
-
+  
         try {
-          const response = await sendMessageToThread(currentConversationId, inputMessage);
-
+          const response = await sendMessageToThread(currentConversationId, newMessage.text);
+  
           const botResponseText = response.textResponse || 'No se recibió respuesta del modelo';
           const botResponse = {
             text: botResponseText,
             isUser: false,
             timestamp: new Date().getTime()
           };
-
+  
           setConversations(prev =>
             prev.map(conv =>
               conv.id === currentConversationId
@@ -199,10 +203,9 @@ const Chatbot = () => {
           setIsTyping(false);
         }
       }
-
-      setInputMessage('');
     }
   };
+  
 
   const handleSelectConversation = (conversationId) => {
     setCurrentConversationId(conversationId);
@@ -212,7 +215,7 @@ const Chatbot = () => {
 
   const handleCreateNewConversation = async () => {
     try {
-      const response = await axios.post('http://localhost:3001/api/v1/workspace/prueba/thread/new', {
+      const response = await axios.post('${apiUrl}/v1/workspace/prueba/thread/new', {
         userId: 1,
         name: inputMessage || 'Nueva Conversación',
         slug: `slug-${Date.now()}`
@@ -276,7 +279,13 @@ const Chatbot = () => {
       <div className={`chat-content ${isSidebarOpen ? 'shifted-right' : 'centered'}`}>
         {!currentConversation ? (
           <div className="initial-view">
-            <img src="/aura-bot.png" alt="AURA Bot" className="bot-avatar-large" />
+            <video 
+              src="/aura-bot.mp4" // Asegúrate de que esta ruta sea correcta
+              autoPlay 
+              loop 
+              muted 
+              className="bot-avatar-large"
+            ></video>
             <p className="welcome-text">
               ¡Hola! Soy <span className="aura-text">AURA</span>,<br /> ¿En qué puedo ayudarte?
             </p>
@@ -302,7 +311,13 @@ const Chatbot = () => {
               {currentConversation.messages?.map((message, index) => (
                 <div key={index} className={`message ${message.isUser ? 'user-message' : 'bot-message'}`}>
                   {!message.isUser && (
-                    <img src="/aura-bot.png" alt="AURA Bot" className="bot-avatar-small" />
+                    <video 
+                      src="/aura-bot.mp4" 
+                      autoPlay 
+                      loop 
+                      muted 
+                      className="bot-avatar-small"
+                    ></video>
                   )}
                   <div className="message-content">{message.text}</div>
                 </div>
@@ -337,6 +352,7 @@ const Chatbot = () => {
           </div>
         )}
       </div>
+
 
       {showScrollToBottom && (
         <button className="scroll-to-bottom" onClick={scrollToBottom}>

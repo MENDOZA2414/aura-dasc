@@ -200,16 +200,22 @@
     align-items: center;
     padding: 0 20px;
     box-sizing: border-box;
-     margin-bottom: 90px;
+    margin-bottom: 90px;
 }
-
+/* Estilo para los mensajes */
+.message-content {
+    text-align: justify; /* Texto justificado */
+    line-height: 1.6;
+    font-size: 1em;
+    white-space: pre-line;
+}
 .messages-container {
     display: flex;
     flex-direction: column;
     gap: 10px;
     width: 100%;
-    max-width: 650px;
-    margin-top: 40px; /* Margen superior agregado */
+    max-width: 700px;
+    margin-top: 20px; /* Margen superior agregado */
     
 }
 .message:last-child {
@@ -218,10 +224,11 @@
 .message {
     display: flex;
     align-items: center;
-    max-width: 80%;
+    max-width: 100%;
     padding: 10px 15px;
     border-radius: 20px;
     box-sizing: border-box;
+    word-wrap: break-word;
 }
 
 .user-message {
@@ -229,6 +236,11 @@
     background-color: #3a84f7;
     color: white;
     margin-right: 10px;
+    margin-bottom: 25px;
+    max-width: 60%;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .bot-message {
@@ -238,15 +250,17 @@
 }
 
 .bot-avatar-large {
-    width: 80px;
-    height: 80px;
-}
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+  }
 
-.bot-avatar-small {
-    width: 30px;
-    height: 30px;
+  .bot-avatar-small {
+    width: 70px;
+    height: 70px;
     margin-right: 10px;
-}
+    border-radius: 50%;
+  }
 
 /* Contenedor de entrada */
 .input-container {
