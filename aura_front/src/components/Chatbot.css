@@ -247,20 +247,28 @@
     align-self: flex-start;
     color: white;
     margin-left: 10px;
+    padding: 10px 15px;
 }
 
 .bot-avatar-large {
     width: 300px;
     height: 300px;
     border-radius: 50%;
+    background-color: transparent;
+    border: none;
+    margin: 0; /* Elimina los márgenes */
+    padding: 0; /* Asegura que no haya padding */
   }
 
   .bot-avatar-small {
-    width: 70px;
-    height: 70px;
+    width: 40px;
+    height: 40px;
     margin-right: 10px;
     border-radius: 50%;
-  }
+    border: 2px solid #3a84f7;
+    background-color: transparent;
+    align-self: flex-start;
+}
 
 /* Contenedor de entrada */
 .input-container {
@@ -330,7 +338,12 @@
     left: 50%;
     transform: translateX(-50%);
 }
-
+/* Estilo para el último mensaje sin borde circular */
+.message:last-child .bot-avatar-small {
+    border: none;
+    padding: 0;
+    box-shadow: none;
+}
 .typing-indicator {
     font-style: italic;
     color: #888;
@@ -345,12 +358,13 @@
     display: inline-block;
     animation: dots 1.5s steps(3, end) infinite;
   }
-  .scroll-to-bottom {
+ /* Botón de desplazamiento hacia abajo */
+.scroll-to-bottom {
     position: fixed;
-    bottom: 100px; /* Ajusta la altura para que esté encima del cuadro de entrada */
+    bottom: 100px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(27, 30, 34, 0.8); /* Color #1b1e22 con transparencia */
+    background-color: rgba(27, 30, 34, 0.8);
     border: none;
     color: white;
     font-size: 1.5em;
@@ -363,11 +377,12 @@
     cursor: pointer;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease, transform 0.3s ease;
-  }
+}
+
   
   .scroll-to-bottom:hover {
-    background-color: rgba(27, 30, 34, 1); /* Color #1b1e22 sin transparencia al hacer hover */
-    transform: translateX(-50%) scale(1.1); /* Efecto de zoom al hacer hover */
+    background-color: rgba(27, 30, 34, 1);
+    transform: translateX(-50%) scale(1.1);
   }
   
   .sidebar {
@@ -390,7 +405,20 @@
   ::-webkit-scrollbar-thumb:hover {
     background-color: #4b5059; /* Color más claro cuando está en hover */
   }
+/* Ajustes de margen en dispositivos móviles */
+@media (max-width: 768px) {
+    .bot-avatar-small,
+    .bot-avatar-large,
+    .bot-message,
+    .user-message {
+        margin-left: 5px; /* Más cerca del borde izquierdo */
+        max-width: 100%; /* Mensajes más alargados */
+    }
 
+    .bot-message {
+        padding: 10px 12px; /* Reducción de padding para más espacio de texto */
+    }
+}
   
   
   @keyframes dots {

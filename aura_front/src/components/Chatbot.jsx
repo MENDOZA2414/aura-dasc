@@ -6,6 +6,10 @@ import { TbLayoutSidebarLeftExpand, TbLayoutSidebarLeftCollapse } from "react-ic
 import { AiOutlinePlus, AiOutlineDown } from 'react-icons/ai';
 import './Chatbot.css';
 
+const isMobileDevice = () => {
+  return /Mobi|Android/i.test(navigator.userAgent);
+};
+
 const Chatbot = () => {
   const [conversations, setConversations] = useState([]);
   const [currentConversationId, setCurrentConversationId] = useState(null);
@@ -18,7 +22,7 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
   const chatViewRef = useRef(null);
   const apiUrl = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
-
+  console.log("API URL:", apiUrl);
 
   useEffect(() => {
     fetchConversations();
@@ -105,7 +109,8 @@ const Chatbot = () => {
 
   const sendMessageToThread = async (threadSlug, message) => {
     try {
-      const response = await axios.post(`${apiUrl}/v1/workspace/prueba/thread/${threadSlug}/chat`,
+      const response = await axios.post(
+        `${apiUrl}/v1/workspace/prueba/thread/${threadSlug}/chat`,
         {
           message: message,
           mode: "chat",
@@ -215,7 +220,7 @@ const Chatbot = () => {
 
   const handleCreateNewConversation = async () => {
     try {
-      const response = await axios.post('${apiUrl}/v1/workspace/prueba/thread/new', {
+      const response = await axios.post(`${apiUrl}/v1/workspace/prueba/thread/new`, {
         userId: 1,
         name: inputMessage || 'Nueva Conversación',
         slug: `slug-${Date.now()}`
@@ -280,7 +285,7 @@ const Chatbot = () => {
         {!currentConversation ? (
           <div className="initial-view">
             <video 
-              src="/aura-bot.mp4" // Asegúrate de que esta ruta sea correcta
+              src="/aura-bot.mp4"
               autoPlay 
               loop 
               muted 
@@ -311,29 +316,29 @@ const Chatbot = () => {
               {currentConversation.messages?.map((message, index) => (
                 <div key={index} className={`message ${message.isUser ? 'user-message' : 'bot-message'}`}>
                   {!message.isUser && (
-                    <video 
-                      src="/aura-bot.mp4" 
-                      autoPlay 
-                      loop 
-                      muted 
-                      className="bot-avatar-small"
-                    ></video>
+                    index === currentConversation.messages.length - 1 ? (
+                      <video 
+                        src="/aura-bot.mp4" 
+                        autoPlay 
+                        loop 
+                        muted 
+                        playsInline
+                        className="bot-avatar-small"
+                      ></video>
+                    ) : (
+                      <img 
+                        src="/aura-bot.png"
+                        alt="AURA Bot" 
+                        className="bot-avatar-small"
+                      />
+                    )
                   )}
                   <div className="message-content">{message.text}</div>
                 </div>
               ))}
-              <div ref={messagesEndRef}></div>
-              {isTyping && !connectionError && (
-                <div className="typing-indicator">
-                  <p>AURA está escribiendo<span className="dots">...</span></p>
-                </div>
-              )}
-              {connectionError && (
-                <div className="error-indicator">
-                  <p>Hubo un error al conectar con AURA. Intenta nuevamente más tarde.</p>
-                </div>
-              )}
+              <div ref={messagesEndRef} />
             </div>
+
             <form onSubmit={handleSendMessage} className="input-container chat-input">
               <input
                 type="text"
@@ -352,7 +357,6 @@ const Chatbot = () => {
           </div>
         )}
       </div>
-
 
       {showScrollToBottom && (
         <button className="scroll-to-bottom" onClick={scrollToBottom}>
